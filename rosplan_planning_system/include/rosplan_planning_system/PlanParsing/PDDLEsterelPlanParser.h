@@ -51,6 +51,13 @@ namespace KCL_rosplan {
 					for(; cit!=action_details[node.action.action_id].at_end_add_effects.end(); cit++) {
 						if(domainFormulaMatches(condition, *cit)) return true;
 					}
+					// Check probabilistic effects
+                    for (int i = 0; i < action_details[node.action.action_id].probabilistic_effects.size(); ++i) {
+                        cit = action_details[node.action.action_id].probabilistic_effects[i].add_effects.begin();
+                        for(; cit!=action_details[node.action.action_id].probabilistic_effects[i].add_effects.end(); cit++) {
+                            if(domainFormulaMatches(condition, *cit)) return true;
+                        }
+                    }
 				}
 
 			} else {
@@ -65,6 +72,13 @@ namespace KCL_rosplan {
 					for(; cit!=action_details[node.action.action_id].at_end_del_effects.end(); cit++) {
 						if(domainFormulaMatches(condition, *cit)) return true;
 					}
+                    // Check probabilistic effects
+                    for (int i = 0; i < action_details[node.action.action_id].probabilistic_effects.size(); ++i) {
+                        cit = action_details[node.action.action_id].probabilistic_effects[i].del_effects.begin();
+                        for(; cit!=action_details[node.action.action_id].probabilistic_effects[i].del_effects.end(); cit++) {
+                            if(domainFormulaMatches(condition, *cit)) return true;
+                        }
+                    }
 				}
 			}
 

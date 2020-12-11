@@ -223,6 +223,12 @@ namespace KCL_rosplan {
 			groundFormula(action_details[msg.action_id].at_start_neg_condition, opParams, params);
 			groundFormula(action_details[msg.action_id].at_end_neg_condition, opParams, params);
 			groundFormula(action_details[msg.action_id].over_all_neg_condition, opParams, params);
+
+			for (int i = 0; i < action_details[msg.action_id].probabilistic_effects.size(); ++i) {
+                groundFormula(action_details[msg.action_id].probabilistic_effects[i].add_effects, opParams, params);
+                groundFormula(action_details[msg.action_id].probabilistic_effects[i].del_effects, opParams, params);
+            }
+
 		}
 	}
 
@@ -442,6 +448,15 @@ namespace KCL_rosplan {
 				for(cit = op.at_start_del_effects.begin(); cit!=op.at_start_del_effects.end(); cit++)
 					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
 
+				// determine if previous node start effect interferes with current node effects
+                for (int i = 0; i < op.probabilistic_effects.size(); ++i) {
+                    for (cit = op.probabilistic_effects[i].add_effects.begin(); cit != op.probabilistic_effects[i].add_effects.end(); cit++)
+                        interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+                    for (cit = op.probabilistic_effects[i].del_effects.begin(); cit != op.probabilistic_effects[i].del_effects.end(); cit++)
+                        interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+                }
+
+
 			} else if(prenode->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
 
 				// determine if current_node negates at end condition of action end node
@@ -461,7 +476,16 @@ namespace KCL_rosplan {
 					interferes = interferes || satisfiesPrecondition(*cit, *node, true);
 				for(cit = op.at_end_del_effects.begin(); cit!=op.at_end_del_effects.end(); cit++)
 					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
-			}
+
+				// Same for probabilistic effects
+                for (int i = 0; i < op.probabilistic_effects.size(); ++i) {
+                    for (cit = op.probabilistic_effects[i].add_effects.begin(); cit != op.probabilistic_effects[i].add_effects.end(); cit++)
+                        interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+                    for (cit = op.probabilistic_effects[i].del_effects.begin(); cit != op.probabilistic_effects[i].del_effects.end(); cit++)
+                        interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+                }
+
+            }
 
 			if(interferes) {
 				makeEdge(prenode->node_id, node->node_id,
